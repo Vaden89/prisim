@@ -6,7 +6,10 @@ import { useEffect, useRef, useState } from "react";
 export function HowPrisimWorksSection() {
   return (
     <>
-      <div className="w-full px-4 lg:px-24 bg-foreground text-background">
+      <div
+        id="how-it-works"
+        className="scroll-mt-28 lg:scroll-mt-36 w-full px-4 lg:px-24 bg-foreground text-background"
+      >
         <section className="min-h-[50vh] border-x-[0.7px] border-light-gray/50">
           <div className="lg:pt-36 pt-16 p-4 lg:p-8 border-b border-light-gray/50">
             <h2 className="text-3xl lg:text-5xl max-w-2xl leading-[120%] tracking-[-4%]">
@@ -91,19 +94,19 @@ function Content() {
           title="REASON"
           isActive={activeIndex === 2}
           onClick={() => setActiveIndex(2)}
-          label="Write like you normally do."
-          description="Create tickets in a Trello-style board using simple text, screenshots, or Figma links. No technical jargon required."
+          label="Prism indexes your repository."
+          description="On every merge, Prism uses syntax tree analysis and vector code embeddings to build a live map of your architecture, functions, and dependencies."
         />
         <ExplainerCard
           index={3}
           title="ENRICH"
           isActive={activeIndex === 3}
           onClick={() => setActiveIndex(3)}
-          label="Write like you normally do."
-          description="Create tickets in a Trello-style board using simple text, screenshots, or Figma links. No technical jargon required."
+          label="Instant blast-radius mapping."
+          description=" Before a developer opens the ticket, Prism identifies every cascading file, API, or database table affected generating actionable sub-tasks automatically."
         />
       </div>
-      <div className="w-full h-100 lg:h-150 bg-[#E1E1E7] border-l-[0.7px] border-light-gray/50"></div>
+      <div className="w-full h-90 lg:h-150 bg-[#E1E1E7] border-l-[0.7px] border-light-gray/50"></div>
     </div>
   );
 }
@@ -130,10 +133,15 @@ function ExplainerCard({
       onClick={onClick}
       className={cn(
         "lg:p-8 p-4 border-b-[0.7px] border-light-gray/50 h-20 lg:h-25.5 overflow-hidden transition-all ease-in duration-300 cursor-pointer",
-        isActive && "h-64 lg:h-92.5",
+        isActive && "h-72 lg:h-92.5",
       )}
     >
-      <div className="text-2xl lg:text-[32px] uppercase flex items-center gap-8 [&_span]:leading-[120%] [&_span]:tracking-[-4%] mb-24 lg:mb-40">
+      <div
+        className={cn(
+          "text-2xl lg:text-[32px] uppercase flex items-center gap-8 [&_span]:leading-[120%] [&_span]:tracking-[-4%] mb-24 lg:mb-40",
+          !isActive && "text-light-gray",
+        )}
+      >
         <span>{String(index).padStart(2, "0")}. </span>
         <span>{title}</span>
       </div>
