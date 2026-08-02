@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { Provider } from "../contexts/provider";
 
 const suisseIntl = localFont({
   src: [
@@ -51,7 +52,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={suisseIntl.variable}>
-      <body>{children}</body>
+      <body>
+        <Provider>{children}</Provider>
+      </body>
     </html>
   );
 }
