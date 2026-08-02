@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/*
+ * Scan this component library's source so any utility classes used inside
+ * @repo/ui are included in every app that imports this stylesheet.
+ * Paths are resolved relative to this file.
+ */
+@source "../components/**/*.{ts,tsx}";
+
+@layer base {
+  :root {
+    --foreground: #f6f6f6;
+    --background: #020203;
+    --primary: #1630dd;
+
+    --outline-gray: #242425;
+    --light-gray: #8d8d8d;
+    --dark-gray: #40445e;
+  }
+
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    color: var(--foreground);
+    background: var(--background);
+    font-family: var(--font-sans), sans-serif;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}

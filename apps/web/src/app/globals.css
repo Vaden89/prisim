@@ -1,0 +1,168 @@
+@import "@repo/ui/globals.css";
+
+@source "../**/*.{ts,tsx}";
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-dark-gray: var(--dark-gray);
+  --color-light-gray: var(--light-gray);
+  --color-outline-gray: var(--outline-gray);
+}
+
+button {
+  cursor: pointer;
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--dark-gray);
+  transition: width ease 0.5s;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.main-bg {
+  position: relative;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--outline-gray) 10%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--outline-gray) 10%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    5px 40px,
+    40px 5px;
+  background-position:
+    -2.5px -10px,
+    -10px -2.5px;
+  overflow: hidden;
+}
+
+.main-bg::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  animation: fadeIn cubic-bezier(0.18, 0.89, 0.32, 1.28) 1200ms both;
+  background-position-y: -100%;
+  background-position-x: -5%;
+  background-repeat: no-repeat;
+  background-image: url("/icons/logo-mark.svg");
+}
+
+.main-bg::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  animation: fadeIn cubic-bezier(0.18, 0.89, 0.32, 1.28) 1200ms both;
+  background-position-x: 100%;
+  background-position-y: 230%;
+  background-repeat: no-repeat;
+  background-image: url("/icons/logo-mark-right.svg");
+}
+
+.ascii-interactive {
+  transition:
+    filter 300ms ease,
+    transform 300ms ease;
+  will-change: filter;
+}
+
+.ascii-interactive:hover {
+  filter: brightness(1.2) saturate(1.4)
+    drop-shadow(0 0 10px rgba(44, 64, 200, 0.55));
+}
+
+.hold {
+  position: relative;
+  overflow: hidden;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--outline-gray) 15%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--outline-gray) 15%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    5px 40px,
+    40px 5px;
+  background-position:
+    -2.5px -10px,
+    -10px -2.5px;
+
+  ::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    bottom: -50%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 70%;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    filter: blur(40px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    rotate: 5deg;
+  }
+  to {
+    opacity: 1;
+    rotate: 0deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ascii-interactive {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-bg::before {
+    background-size: 45%;
+    background-position: top left;
+  }
+  .main-bg::after {
+    background-size: 45%;
+    background-position: bottom right;
+    background-position-x: 110%;
+  }
+}
