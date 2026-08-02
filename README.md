@@ -1,159 +1,60 @@
-# Turborepo starter
+# Prisim
 
-This Turborepo starter is maintained by the Turborepo core team.
+Prisim is a task and ticket management platform that helps teams turn requests into clear, actionable work and track it from start to finish. It combines the structure of Jira with the visual simplicity of a Trello-style Kanban board, so work stays easy to understand and easy to move.
 
-## Using this example
+## What Makes Prisim Different
 
-Run the following command:
+Prisim is designed to bridge the gap between non-technical requests and the real impact those requests can have on a codebase.
 
-```sh
-npx create-turbo@latest
-```
+In many teams, tasks are created by people who care about the outcome, but not necessarily the architectural consequences of the change. Prisim addresses that gap with an agent that reviews each task, reasons about how it may affect the codebase, identifies related systems or dependencies, and creates sub-tasks for any downstream work that may be required.
 
-## What's inside?
+This gives developers a more complete view of the change before implementation starts.
 
-This Turborepo includes the following packages/apps:
+## How Prisim Works
+
+### Product Side
+
+1. A task is created in the app.
+2. The task is stored in the database.
+3. A processing job is queued for the agent.
+4. The agent reads the task content, including text and images where available.
+5. It searches the vector database for relevant code and dependencies.
+6. It reasons about how the requested change may affect the codebase.
+7. It creates sub-tasks that describe the related changes a developer may need to make.
+
+The result is a task view that shows not only the original request, but also the surrounding work needed to ship it safely.
+
+### Code Side
+
+1. On each merge into the main branch, the application pulls the updated codebase.
+2. A code ingestion script runs using tree-sitter.
+3. The script extracts function definitions, method definitions, and dependency information.
+4. That output is passed to a code embedding model such as `voyage-3-code`.
+5. The generated vectors are stored in a RAG-backed database for fast retrieval.
+
+This makes it easier for the agent to reason over the current codebase and surface the most relevant context for a task.
+
+## Repository
+
+This repository is a Turborepo-based monorepo with separate apps and shared packages.
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `apps/web`: the main web application
+- `packages/ui`: shared UI components
+- `packages/eslint-config`: shared ESLint configuration
+- `packages/typescript-config`: shared TypeScript configuration
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Development
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Use your package manager or Turbo to run the apps locally.
 
 ```sh
-cd my-turborepo
-turbo build
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+To build everything:
 
 ```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+pnpm build
 ```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
