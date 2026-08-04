@@ -3,6 +3,11 @@ import gsap from "gsap";
 import { cn } from "@repo/ui";
 import { useEffect, useRef, useState } from "react";
 
+const PREVIEWS: { src: string; steps: number[] }[] = [
+  { src: "/videos/02.mp4", steps: [1, 2] },
+  { src: "/videos/03.mp4", steps: [3] },
+];
+
 export function HowPrisimWorksSection() {
   return (
     <>
@@ -106,7 +111,23 @@ function Content() {
           description=" Before a developer opens the ticket, Prism identifies every cascading file, API, or database table affected generating actionable sub-tasks automatically."
         />
       </div>
-      <div className="w-full h-90 lg:h-150 bg-[#E1E1E7] border-l-[0.7px] border-light-gray/50"></div>
+      <div className="relative w-full h-100 lg:h-160 bg-[#E1E1E7] lg:border-l-[0.7px] border-light-gray/50 overflow-hidden">
+        {PREVIEWS.map(({ src, steps }) => (
+          <video
+            key={src}
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className={cn(
+              "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
+              steps.includes(activeIndex) ? "opacity-100" : "opacity-0",
+            )}
+          />
+        ))}
+      </div>
     </div>
   );
 }
