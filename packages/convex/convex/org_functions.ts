@@ -3,6 +3,12 @@ import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
 
+const DEFAULT_STATUSES = [
+  { name: "backlog", color: "#8D8D8D" },
+  { name: "in-progress", color: "#1630DD" },
+  { name: "completed", color: "#10B981" },
+] as const;
+
 export const createOrganization = mutation({
   args: {
     name: v.string(),
@@ -43,6 +49,15 @@ export const createOrganization = mutation({
       userId: user._id,
       role: "OWNER",
     });
+
+    for (const status of DEFAULT_STATUSES) {
+      await ctx.db.insert("statuses", {
+        name: status.name,
+        color: status.color,
+        orgId,
+      });
+    }
+
     return orgId;
   },
 });
