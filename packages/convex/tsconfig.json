@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["convex/**/*.ts"],
+  "exclude": ["node_modules"]
+}
