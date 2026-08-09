@@ -42,8 +42,13 @@ export default defineSchema({
     description: v.string(),
     boardId: v.id("boards"),
     assignee: v.id("users"),
+    creator: v.id("users"),
     status: v.id("statuses"),
-  }).index("boardId", ["boardId"]),
+    priority: v.string(),
+  })
+    .index("boardId", ["boardId"])
+    .index("assignee", ["assignee"])
+    .index("creator", ["creator"]),
 
   statuses: defineTable({
     name: v.string(),
