@@ -2,11 +2,7 @@
 import gsap from "gsap";
 import { cn } from "@repo/ui";
 import { useEffect, useRef, useState } from "react";
-
-const PREVIEWS: { src: string; steps: number[] }[] = [
-  { src: "/videos/02.mp4", steps: [1, 2] },
-  { src: "/videos/03.mp4", steps: [3] },
-];
+import { HowItWorksAnimation } from "@/components/landing/animations";
 
 export function HowPrisimWorksSection() {
   return (
@@ -33,38 +29,32 @@ export function HowPrisimWorksSection() {
 
 function Content() {
   const [activeIndex, setActiveIndex] = useState(1);
+  const [isInView, setIsInView] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (!intervalRef.current) {
-            intervalRef.current = setInterval(() => {
-              setActiveIndex((prev) => (prev % 3) + 1);
-            }, 5000);
-          }
-        } else if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      });
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry) setIsInView(entry.isIntersecting);
     });
     observer.observe(el);
 
-    return () => {
-      observer.disconnect();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!isInView || isPaused) return;
+
+    const id = setInterval(() => {
+      setActiveIndex((prev) => (prev % 3) + 1);
+    }, 5000);
+
+    return () => clearInterval(id);
+  }, [isInView, isPaused, activeIndex]);
 
   useEffect(() => {
     if (!containerRef.current || !indicatorRef.current) return;
@@ -82,10 +72,14 @@ function Content() {
   return (
     <div
       ref={containerRef}
-      className="w-full grid grid-cols-1 lg:grid-cols-2 relative"
+      className="w-full grid grid-cols-1 lg:grid-cols-2 relative "
     >
-      <div ref={indicatorRef} className="absolute w-1/3 h-0.5 bg-primary" />
-      <div className="flex flex-col">
+      <div ref={indicatorRef} className="absolute w-1/3 h-0.5 bg-primary z-2" />
+      <div
+        className="flex flex-col"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <ExplainerCard
           index={1}
           title="Submit"
@@ -111,23 +105,7 @@ function Content() {
           description=" Before a developer opens the ticket, Prism identifies every cascading file, API, or database table affected generating actionable sub-tasks automatically."
         />
       </div>
-      <div className="relative w-full h-100 lg:h-160 bg-[#E1E1E7] lg:border-l-[0.7px] border-light-gray/50 overflow-hidden">
-        {PREVIEWS.map(({ src, steps }) => (
-          <video
-            key={src}
-            src={src}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className={cn(
-              "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
-              steps.includes(activeIndex) ? "opacity-100" : "opacity-0",
-            )}
-          />
-        ))}
-      </div>
+      <HowItWorksAnimation activeIndex={activeIndex} />
     </div>
   );
 }
@@ -153,14 +131,15 @@ function ExplainerCard({
     <div
       onClick={onClick}
       className={cn(
-        "lg:p-8 p-4 border-b-[0.7px] border-light-gray/50 h-20 lg:h-25.5 overflow-hidden transition-all ease-in duration-300 cursor-pointer",
-        isActive && "h-72 lg:h-92.5",
+        "lg:p-8 p-4 border-b-[0.7px] border-light-gray/50 h-20 lg:h-25.5 overflow-hidden cursor-pointer hover:px-10 hover:bg-primary hover:text-foreground group",
+        "[transition:height_300ms_ease-in-out,padding_200ms_ease-out,background-color_150ms_ease-out,color_150ms_ease-out]",
+        isActive && "h-72 lg:h-95",
       )}
     >
       <div
         className={cn(
           "text-2xl lg:text-[32px] uppercase flex items-center gap-8 [&_span]:leading-[120%] [&_span]:tracking-[-4%] mb-24 lg:mb-40",
-          !isActive && "text-light-gray",
+          !isActive && "text-light-gray group-hover:text-foreground",
         )}
       >
         <span>{String(index).padStart(2, "0")}. </span>
