@@ -30,7 +30,7 @@ export function HeroSection() {
     <div className="w-full px-4 lg:px-24">
       <section
         ref={container}
-        className="w-full min-h-96 lg:min-h-150 border-x-[0.7px] border-outline-gray flex flex-col items-center justify-center text-center px-4 lg:p-10 main-bg"
+        className="w-full min-h-96 lg:min-h-150 2xl:min-h-180 border-x-[0.7px] border-outline-gray flex flex-col items-center justify-center text-center px-4 lg:p-10 main-bg"
       >
         <h1 className="test opacity-0 max-w-206 font-semibold text-4xl lg:text-[80px] leading-[120%] tracking-[-4%]">
           Turn simple requests into full-stack clarity.
