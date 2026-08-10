@@ -35,7 +35,7 @@ export function Modal({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 h-dvh bg-black/20 transition-opacity duration-150" />
+        <Dialog.Backdrop className="fixed inset-0 h-dvh bg-black/20  backdrop-blur-xs backdrop-grayscale transition-opacity duration-150" />
         <Dialog.Popup
           className={`fixed top-1/2 left-1/2 -mt-8 flex flex-col w-full max-w-[calc(100vw-3rem)] ${sizeClasses[size]} -translate-x-1/2 -translate-y-1/2 bg-tertiary shadow-md transition-[scale,opacity] duration-100 ease-out data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0 rounded-lg`}
         >

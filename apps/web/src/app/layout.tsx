@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Provider } from "../contexts/provider";
 
 const suisseIntl = localFont({
@@ -44,6 +45,7 @@ export const metadata: Metadata = {
 };
 
 gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(ScrollTrigger);
 
 export default function RootLayout({
   children,

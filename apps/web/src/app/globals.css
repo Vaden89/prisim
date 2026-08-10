@@ -1,15 +1,28 @@
 @import "@repo/ui/globals.css";
+@import "./styles/animations.css";
 
 @source "../**/*.{ts,tsx}";
 
 @theme inline {
   --color-primary: var(--primary);
+  --color-tertiary: var(--tertiary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
+  --color-secondary: var(--secondary);
+
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+
   --color-dark-gray: var(--dark-gray);
+  --color-dark-gray-500: var(--dark-gray-light);
+
   --color-light-gray: var(--light-gray);
+  --color-border-gray: var(--border-gray);
+
   --color-outline-gray: var(--outline-gray);
+  --color-outline-gray-700: var(--outline-gray-dark);
+  --color-outline-gray-200: var(--outline-gray-light);
 }
 
 button {
@@ -138,6 +151,57 @@ button {
   }
 }
 
+.w-md-editor {
+  border: none;
+  background: none;
+  box-shadow: none;
+
+  > .w-md-editor-toolbar {
+    border: none;
+    box-shadow: none;
+    width: fit-content;
+    height: 40px !important;
+    padding: 4px 8px;
+    border-radius: 32px;
+    background: var(--outline-gray-light);
+
+    > ul {
+      gap: 16px;
+      > li > button {
+        display: flex;
+        color: var(--secondary);
+        align-items: center;
+        height: 28px !important;
+        justify-content: center;
+        font-size: 24px !important;
+        > svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+    > ul > li > button:hover {
+      color: var(--foreground);
+      border-radius: 16px;
+    }
+  }
+}
+
+.w-md-editor-text-input {
+  font-size: 14 !important;
+}
+
+/* STYLING FOR SONNER TOAST */
+[data-sonner-toast][data-type="success"],
+[data-sonner-toast][data-type="success"] [data-description] {
+  color: var(--success) !important;
+}
+
+[data-sonner-toast][data-type="error"],
+[data-sonner-toast][data-type="error"] [data-description] {
+  color: var(--destructive) !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -160,6 +224,7 @@ button {
     background-size: 45%;
     background-position: top left;
   }
+
   .main-bg::after {
     background-size: 45%;
     background-position: bottom right;
@@ -170,5 +235,34 @@ button {
     > ::after {
       bottom: -80%;
     }
+  }
+}
+
+@media (max-width: 900px) {
+  .main-bg::before {
+    background-size: 30%;
+    background-position: top left;
+  }
+
+  .main-bg::after {
+    background-size: 30%;
+    background-position: bottom right;
+    background-position-x: 105%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .main-bg::before {
+    background-size: 40%;
+    background-position: top left;
+    background-position-x: -10%;
+    background-position-y: -40%;
+  }
+
+  .main-bg::after {
+    background-size: 40%;
+    background-position: bottom right;
+    background-position-x: 108%;
+    background-position-y: 250%;
   }
 }

@@ -1,0 +1,203 @@
+:root {
+  --scan-duration: 5s;
+}
+
+@property --rotate-transform {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0rad;
+}
+
+#scanner-center {
+  transform-origin: center;
+  transform: rotate(var(--rotate-transform, 0rad));
+  animation: scanner-rotate var(--scan-duration) infinite;
+}
+
+#moving {
+  animation: moving-circle-translate var(--scan-duration) infinite;
+}
+
+#animated-triangle {
+  animation: triangle-fill var(--scan-duration) infinite;
+}
+
+.animate-flicker {
+  animation: flicker 3s ease-in-out infinite;
+}
+
+#enrich-sweep {
+  transform-origin: center;
+  transform: rotate(var(--rotate-transform, -1.187rad));
+  animation: enrich-sweep-rotate var(--scan-duration) infinite;
+}
+
+#enrich-orbit {
+  transform-origin: center;
+  transform: rotate(var(--rotate-transform, 0rad));
+  animation: enrich-orbit-rotate var(--scan-duration) infinite;
+}
+
+#enrich-diamond {
+  animation: enrich-diamond-fill var(--scan-duration) infinite;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes triangle-fill {
+  0% {
+    animation-timing-function: step-end;
+    fill: rgba(2, 2, 3, 0);
+  }
+  1.355% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  36.638% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  39.411% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(47, 71, 240, 0);
+  }
+  44.511% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  52.977% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  58.833% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  68.09% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  78.258% {
+    fill: rgba(2, 2, 3, 0);
+  }
+  100% {
+    fill: rgba(2, 2, 3, 0);
+  }
+}
+
+@keyframes scanner-rotate {
+  0% {
+    animation-timing-function: cubic-bezier(0.547, -0.007, 0.58, 1);
+    --rotate-transform: 0rad;
+  }
+  100% {
+    --rotate-transform: -6.283rad;
+  }
+}
+
+@keyframes enrich-sweep-rotate {
+  0% {
+    animation-timing-function: cubic-bezier(0.803, 0, 0.334, 1.007);
+    --rotate-transform: -1.187rad;
+  }
+  100% {
+    --rotate-transform: -7.47rad;
+  }
+}
+
+@keyframes enrich-orbit-rotate {
+  0% {
+    --rotate-transform: 0rad;
+  }
+  2.579% {
+    animation-timing-function: cubic-bezier(0.975, -0.014, 0.341, 1);
+    --rotate-transform: 0rad;
+  }
+  87.355% {
+    --rotate-transform: 6.283rad;
+  }
+  100% {
+    --rotate-transform: 6.283rad;
+  }
+}
+
+@keyframes enrich-diamond-fill {
+  0% {
+    animation-timing-function: step-end;
+    fill: rgba(2, 2, 3, 0);
+  }
+  1.355% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  16.345% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  30.591% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  40.811% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  49.615% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  59.083% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  65.631% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: rgba(2, 2, 3, 0);
+  }
+  75.984% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    fill: #020203;
+  }
+  87.355% {
+    fill: rgba(2, 2, 3, 0);
+  }
+  100% {
+    fill: rgba(2, 2, 3, 0);
+  }
+}
+
+@keyframes moving-circle-translate {
+  0% {
+    translate: 0px 0px;
+  }
+  65.406% {
+    animation-timing-function: cubic-bezier(0.3, -0.05, 0.7, -0.5);
+    translate: 0px 0px;
+  }
+  78.258% {
+    translate: 57.77px -35.97px;
+  }
+  100% {
+    translate: 57.77px -35.97px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #scanner-center,
+  #moving,
+  #animated-triangle,
+  #enrich-sweep,
+  #enrich-orbit,
+  #enrich-diamond,
+  .animate-flicker {
+    animation: none;
+  }
+}
