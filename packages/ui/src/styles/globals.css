@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Scan this component library's source so any utility classes used inside
- * @repo/ui are included in every app that imports this stylesheet.
- * Paths are resolved relative to this file.
- */
 @source "../components/**/*.{ts,tsx}";
 
 @layer base {
@@ -12,10 +7,21 @@
     --foreground: #f6f6f6;
     --background: #020203;
     --primary: #1630dd;
+    --secondary: #636169;
+    --tertiary: #101113;
+
+    --success: #499a13;
+    --destructive: #d62121;
+
+    --dark-gray: #40445e;
+    --dark-gray-light: #505051;
+
+    --light-gray: #8d8d8d;
+    --border-gray: #1f1f20;
 
     --outline-gray: #242425;
-    --light-gray: #8d8d8d;
-    --dark-gray: #40445e;
+    --outline-gray-dark: #262627;
+    --outline-gray-light: #181819;
   }
 
   * {
