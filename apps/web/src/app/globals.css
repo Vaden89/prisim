@@ -250,3 +250,19 @@ button {
     background-position-x: 105%;
   }
 }
+
+@media (min-width: 1440px) {
+  .main-bg::before {
+    background-size: 40%;
+    background-position: top left;
+    background-position-x: -10%;
+    background-position-y: -40%;
+  }
+
+  .main-bg::after {
+    background-size: 40%;
+    background-position: bottom right;
+    background-position-x: 108%;
+    background-position-y: 250%;
+  }
+}
