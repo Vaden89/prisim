@@ -40,7 +40,7 @@ export function Select({
       value={value}
       required={required}
       defaultValue={defaultValue}
-      onValueChange={onValueChange}
+      onValueChange={(newValue) => onValueChange?.(newValue ?? "")}
       disabled={disabled}
     >
       <div className="flex flex-col gap-1.5 w-full">
