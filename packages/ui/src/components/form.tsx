@@ -37,7 +37,7 @@ export function FormField({
   );
 
   return (
-    <div className="flex flex-col gap-1 items-start">
+    <div className="w-full flex flex-col gap-1 items-start">
       <FormLabel label={label} htmlFor={htmlFor} required={required} />
       <div className={fieldStyling}>
         {prefix && <span className="shrink-0">{prefix}</span>}

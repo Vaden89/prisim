@@ -96,7 +96,7 @@ export function SelectItem({
   return (
     <BaseSelect.Item
       className={cn(
-        "flex items-center justify-between px-3 py-2 outline-none rounded-lg cursor-default select-none data-[highlighted]:bg-dark-gray-light/30",
+        "flex cursor-pointer items-center justify-between px-3 py-2 outline-none rounded-lg select-none data-[highlighted]:bg-dark-gray-light/30",
         className,
       )}
       {...props}
