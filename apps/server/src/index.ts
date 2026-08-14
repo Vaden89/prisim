@@ -21,10 +21,18 @@ app.route("/api/blast-radius", blastRadiusRouter);
 
 const port = Number(process.env["PORT"] ?? 3001);
 
-serve({ fetch: app.fetch, port }, () => {
+const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`Server running on http://localhost:${port}`);
-}).close(() => {
-  closePool();
 });
+
+function shutdown() {
+  server.close(() => {
+    closePool();
+    process.exit(0);
+  });
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 export default app;
