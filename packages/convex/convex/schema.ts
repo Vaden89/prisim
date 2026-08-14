@@ -20,6 +20,7 @@ export default defineSchema({
 
   organizations: defineTable({
     name: v.string(),
+    description: v.optional(v.string()),
   }),
 
   staff: defineTable({
@@ -44,11 +45,19 @@ export default defineSchema({
     assignee: v.id("users"),
     creator: v.id("users"),
     status: v.id("statuses"),
+    isReasoning: v.optional(v.boolean()),
     priority: v.string(),
   })
     .index("boardId", ["boardId"])
     .index("assignee", ["assignee"])
     .index("creator", ["creator"]),
+
+  subTasks: defineTable({
+    title: v.string(),
+    description: v.string(),
+    taskId: v.id("tasks"),
+    isCompleted: v.boolean(),
+  }).index("taskId", ["taskId"]),
 
   statuses: defineTable({
     name: v.string(),

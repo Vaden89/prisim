@@ -13,6 +13,7 @@ import type * as board_functions from "../board_functions.js";
 import type * as http from "../http.js";
 import type * as org_functions from "../org_functions.js";
 import type * as status_functions from "../status_functions.js";
+import type * as sub_task_functions from "../sub_task_functions.js";
 import type * as task_functions from "../task_functions.js";
 
 import type {
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   org_functions: typeof org_functions;
   status_functions: typeof status_functions;
+  sub_task_functions: typeof sub_task_functions;
   task_functions: typeof task_functions;
 }>;
 

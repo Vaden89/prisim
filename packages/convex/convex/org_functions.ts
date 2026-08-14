@@ -68,7 +68,7 @@ export const getOrganizations = query({
     const authUser = await authComponent.safeGetAuthUser(ctx);
 
     if (!authUser) {
-      return [];
+      return null;
     }
 
     const user = await ctx.db
@@ -77,7 +77,7 @@ export const getOrganizations = query({
       .unique();
 
     if (!user) {
-      return [];
+      return null;
     }
 
     const staffRecords = await ctx.db
@@ -96,7 +96,7 @@ export const getOrganizations = query({
   },
 });
 
-export const getOrgMembers = query({
+export const getOrganization = query({
   args: {
     orgId: v.string(),
   },
@@ -104,7 +104,7 @@ export const getOrgMembers = query({
     const authUser = await authComponent.safeGetAuthUser(ctx);
 
     if (!authUser) {
-      return [];
+      return null;
     }
 
     const user = await ctx.db
@@ -113,7 +113,122 @@ export const getOrgMembers = query({
       .unique();
 
     if (!user) {
-      return [];
+      return null;
+    }
+
+    const staff = await ctx.db
+      .query("staff")
+      .withIndex("org_user", (q) =>
+        q.eq("orgId", args.orgId as Id<"organizations">).eq("userId", user._id),
+      )
+      .unique();
+
+    if (!staff) {
+      return null;
+    }
+
+    const org = await ctx.db.get(args.orgId as Id<"organizations">);
+
+    if (!org) {
+      return null;
+    }
+
+    return { ...org, role: staff.role };
+  },
+});
+
+export const updateOrganization = mutation({
+  args: {
+    orgId: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await authComponent.safeGetAuthUser(ctx);
+
+    if (!authUser) {
+      throw new ConvexError({
+        code: "UNAUTHENTICATED",
+        message: "You must be signed in to update a workspace.",
+      });
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("authId", (q) => q.eq("authId", authUser._id))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError({
+        code: "USER_NOT_FOUND",
+        message: "Your account could not be found.",
+      });
+    }
+
+    const staff = await ctx.db
+      .query("staff")
+      .withIndex("org_user", (q) =>
+        q.eq("orgId", args.orgId as Id<"organizations">).eq("userId", user._id),
+      )
+      .unique();
+
+    if (!staff) {
+      throw new ConvexError({
+        code: "STAFF_NOT_FOUND",
+        message: "You are not a member of this organization.",
+      });
+    }
+
+    if (staff.role !== "OWNER") {
+      throw new ConvexError({
+        code: "FORBIDDEN",
+        message: "Only the workspace owner can update these details.",
+      });
+    }
+
+    const org = await ctx.db.get(args.orgId as Id<"organizations">);
+
+    if (!org) {
+      throw new ConvexError({
+        code: "ORGANIZATION_NOT_FOUND",
+        message: "This workspace does not exist.",
+      });
+    }
+
+    if (args.name !== undefined && args.name.trim().length === 0) {
+      throw new ConvexError({
+        code: "INVALID_NAME",
+        message: "Workspace name can't be empty.",
+      });
+    }
+
+    const patch: Partial<{ name: string; description: string }> = {};
+
+    if (args.name !== undefined) patch.name = args.name;
+    if (args.description !== undefined) patch.description = args.description;
+
+    await ctx.db.patch(org._id, patch);
+  },
+});
+
+export const getOrgMembers = query({
+  args: {
+    orgId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await authComponent.safeGetAuthUser(ctx);
+
+    if (!authUser) {
+      return null;
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("authId", (q) => q.eq("authId", authUser._id))
+      .unique();
+
+    if (!user) {
+      return null;
     }
 
     const staffRecord = await ctx.db
@@ -124,7 +239,7 @@ export const getOrgMembers = query({
       .unique();
 
     if (!staffRecord) {
-      return [];
+      return null;
     }
 
     const orgStaff = await ctx.db
@@ -140,7 +255,9 @@ export const getOrgMembers = query({
           value: member._id,
           firstName: member.firstName,
           lastName: member.lastName,
+          email: member.email,
           role: s.role,
+          joinedAt: s._creationTime,
         };
       }),
     );
