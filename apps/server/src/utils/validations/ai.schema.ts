@@ -17,7 +17,7 @@ export const blastRadiusSchema = z.object({
         description: z
           .string()
           .describe(
-            "Rich Markdown detailed summary of the affected context and what needs to be done: \n" +
+            "Plain language summary of the affected context and what needs to be done: \n" +
               "- **Target**: `file` and `symbol` affected \n" +
               "- **Change Type**: `rename` | `behavior` | `signature` | `call-site-update` | `review` | `test` | `other` \n" +
               "- **Reasoning**: Casual chain explaining why this symbol is affected by the change \n" +
