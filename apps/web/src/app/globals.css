@@ -192,6 +192,15 @@ button {
   font-size: 14 !important;
 }
 
+.noscroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.noscroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* STYLING FOR SONNER TOAST */
 [data-sonner-toast][data-type="success"],
 [data-sonner-toast][data-type="success"] [data-description] {

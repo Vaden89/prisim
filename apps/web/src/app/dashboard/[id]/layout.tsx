@@ -15,7 +15,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             <Header />
             <div
               data-lenis-prevent
-              className="flex-1 min-h-0 w-full overflow-y-auto px-4 pt-4 pb-8"
+              className="flex-1 min-h-0 w-full overflow-y-auto px-4 pt-4 pb-20 noscroll"
             >
               {children}
             </div>
