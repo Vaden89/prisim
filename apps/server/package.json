@@ -12,10 +12,12 @@
   "dependencies": {
     "@hono/node-server": "^1.14.3",
     "@repo/convex": "workspace:*",
+    "ai": "^7.0.65",
     "convex": "^1.44.0",
     "hono": "^4.7.13",
     "jose": "^6.2.8",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
