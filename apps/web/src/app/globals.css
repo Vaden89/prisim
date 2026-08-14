@@ -23,6 +23,7 @@
   --color-outline-gray: var(--outline-gray);
   --color-outline-gray-700: var(--outline-gray-dark);
   --color-outline-gray-200: var(--outline-gray-light);
+  --color-outline-gray-800: var(--outline-gray-darker);
 }
 
 button {
