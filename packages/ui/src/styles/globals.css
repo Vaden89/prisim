@@ -10,7 +10,7 @@
     --secondary: #636169;
     --tertiary: #101113;
 
-    --success: #499a13;
+    --success: #138a36;
     --destructive: #d62121;
 
     --dark-gray: #40445e;
@@ -22,6 +22,7 @@
     --outline-gray: #242425;
     --outline-gray-dark: #262627;
     --outline-gray-light: #181819;
+    --outline-gray-darker: #1a1a1b;
   }
 
   * {

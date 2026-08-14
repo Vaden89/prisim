@@ -43,9 +43,9 @@ export function RegisterForm() {
       <GithubButton />
       <div className="flex items-center gap-3">
         <FormField
+          type="text"
           name="firstname"
           placeholder="Enter first name"
-          type="text"
         />
         <FormField name="lastname" placeholder="Enter last name" type="text" />
       </div>

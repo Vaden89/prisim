@@ -190,6 +190,27 @@
   }
 }
 
+@keyframes pixel-on {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes shimmer-text {
+  from {
+    background-position: 200% 50%;
+  }
+  to {
+    background-position: -200% 50%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #scanner-center,
   #moving,
@@ -197,7 +218,9 @@
   #enrich-sweep,
   #enrich-orbit,
   #enrich-diamond,
-  .animate-flicker {
-    animation: none;
+  .animate-flicker,
+  .loading-pixel,
+  .loading-shimmer {
+    animation: none !important;
   }
 }
