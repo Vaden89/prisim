@@ -1,24 +1,23 @@
 "use client";
 import Image from "next/image";
 import { api } from "@repo/convex/api";
-import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Select, SelectItem } from "@repo/ui";
 import { Spinner } from "@/components/common/spinner";
+import { useConvexAuth, useQuery } from "convex/react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<string>("");
-  const organizations = useQuery(api.org_functions.getOrganizations);
+  const { isAuthenticated } = useConvexAuth();
+  const organizations = useQuery(
+    api.org_functions.getOrganizations,
+    isAuthenticated ? {} : "skip",
+  );
 
   useEffect(() => {
     if (!organizations) return;
-
-    if (organizations.length === 1) {
-      router.replace(`/dashboard/${organizations[0]!._id}`);
-      return;
-    }
 
     if (organizations.length === 0) {
       router.replace("/onboarding");
@@ -28,7 +27,7 @@ export default function DashboardPage() {
     setSelected(organizations[0]!._id);
   }, [organizations, router]);
 
-  if (!organizations || organizations.length <= 1) {
+  if (!organizations) {
     return (
       <div className="w-full h-dvh flex items-center justify-center">
         <Spinner />
