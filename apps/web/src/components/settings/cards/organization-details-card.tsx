@@ -38,7 +38,9 @@ export function OrganizationDetailsCard() {
         <span className="text-secondary leading-[120%] tracking-[-4%]">
           Organiztion Details
         </span>
-        <span>{user.role}</span>
+        <span className="border border-outline-gray px-2 py-1 text-sm rounded-full text-light-gray">
+          {user.role}
+        </span>
       </div>
       <form className="flex flex-col gap-4 mt-5">
         <div className="grid grid-cols-2 gap-4">
