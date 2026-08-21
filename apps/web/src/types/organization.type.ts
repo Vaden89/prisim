@@ -11,3 +11,7 @@ export type OrganizationType = {
 export type OrgMember = NonNullable<
   FunctionReturnType<typeof api.org_functions.getOrgMembers>
 >[number];
+
+export type OrgInvitation = NonNullable<
+  FunctionReturnType<typeof api.invitation_functions.getInvitations>
+>[number];
