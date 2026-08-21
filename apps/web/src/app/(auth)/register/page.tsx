@@ -1,10 +1,12 @@
+import Link from "next/link";
 import Image from "next/image";
 import { RegisterForm } from "@/components/auth/forms/register-form";
-import Link from "next/link";
+import { InviteInfoBanner } from "@/components/auth/invite-info-banner";
 
 export default function RegisterPage() {
   return (
-    <div className="w-full h-dvh flex flex-col items-center justify-center p-5">
+    <div className="w-full h-dvh flex flex-col items-center justify-center p-5 relative">
+      <InviteInfoBanner />
       <div className="w-full sm:w-1/2 xl:w-1/3 px-4 sm:px-8 py-6 bg-tertiary border border-border-gray rounded-xl text-center">
         <div className="flex flex-col gap-4 mb-4">
           <Image
