@@ -2,7 +2,10 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import blastRadiusRouter from "./routes/blast-radius.js";
+import teamRouter from "./routes/team.jsx";
 import { closePool } from "./lib/db.js";
+import "./queue/email.queue.js";
+import "./queue/workers/email.worker.js";
 
 const app = new Hono();
 
@@ -18,6 +21,7 @@ app.use(
 
 app.get("/", (c) => c.json({ status: "ok" }));
 app.route("/api/blast-radius", blastRadiusRouter);
+app.route("/api/team", teamRouter);
 
 const port = Number(process.env["PORT"] ?? 3001);
 
