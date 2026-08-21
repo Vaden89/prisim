@@ -1,12 +1,25 @@
 "use client";
 
-import { Button, FormField, Select, SelectItem } from "@repo/ui";
-import { Link, Plus, Trash2 } from "lucide-react";
-import { FormEvent, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@repo/convex/api";
+import { useAction } from "convex/react";
+import { FormEvent, useState } from "react";
+import { FunctionArgs } from "convex/server";
+import { authClient } from "@/lib/auth-client";
+import { Link, Plus, Trash2 } from "lucide-react";
+import { getConvexErrorMessage } from "@/lib/convex-error";
+import { useDashboard } from "@/contexts/dashboard-provider";
+import { Button, FormField, Select, SelectItem } from "@repo/ui";
+
+type Invitee = FunctionArgs<
+  typeof api.invitation_functions.invitationAction
+>["invitees"][number];
 
 export function InviteNewMembersCard() {
+  const { org } = useDashboard();
+  const sendInvitations = useAction(api.invitation_functions.invitationAction);
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [invitees, setInvitees] = useState<{ email: string; role: string }[]>(
@@ -38,7 +51,10 @@ export function InviteNewMembersCard() {
       return;
     }
 
-    setInvitees((prev) => [...prev, { email: trimmedEmail, role }]);
+    setInvitees((prev) => [
+      ...prev,
+      { email: trimmedEmail.toLowerCase(), role },
+    ]);
     setEmail("");
     setRole("");
   };
@@ -47,8 +63,32 @@ export function InviteNewMembersCard() {
     setInvitees((prev) => prev.filter((invitee) => invitee.email !== email));
   };
 
-  const handleSendInvitations = () => {
-    toast.error("Sending invitations is currently on pause");
+  const handleSendInvitations = async () => {
+    setError("");
+    setSending(true);
+
+    const { data } = await authClient.convex.token();
+
+    if (!data) {
+      toast.error(
+        "An error occurred while sending invitations, please try again",
+      );
+      return;
+    }
+
+    try {
+      await sendInvitations({
+        token: data.token,
+        workspaceId: org.id,
+        invitees: invitees as Invitee[],
+      });
+      toast.success("Invitations sent");
+      setInvitees([]);
+    } catch (err) {
+      setError(getConvexErrorMessage(err));
+    } finally {
+      setSending(false);
+    }
   };
 
   const getRoleLabel = (value: string) =>
@@ -132,7 +172,11 @@ export function InviteNewMembersCard() {
           </div>
 
           <div className="flex justify-end">
-            <Button type="button" onClick={handleSendInvitations}>
+            <Button
+              type="button"
+              loading={sending}
+              onClick={handleSendInvitations}
+            >
               Send Invitations
             </Button>
           </div>
