@@ -1,7 +1,7 @@
-import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
+import { ConvexError, v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 const DEFAULT_STATUSES = [
   { name: "backlog", color: "#8D8D8D" },
@@ -12,6 +12,7 @@ const DEFAULT_STATUSES = [
 export const createOrganization = mutation({
   args: {
     name: v.string(),
+    slug: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const authUser = await authComponent.safeGetAuthUser(ctx);
@@ -30,6 +31,14 @@ export const createOrganization = mutation({
       });
     }
 
+    const slug =
+      args.slug?.trim() ||
+      args.name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
     const user = await ctx.db
       .query("users")
       .withIndex("authId", (q) => q.eq("authId", authUser._id))
@@ -42,7 +51,29 @@ export const createOrganization = mutation({
       });
     }
 
-    const orgId = await ctx.db.insert("organizations", { name: args.name });
+    if (slug.length === 0) {
+      throw new ConvexError({
+        code: "INVALID_SLUG",
+        message: "Workspace name must contain at least one letter or number.",
+      });
+    }
+
+    const existing = await ctx.db
+      .query("organizations")
+      .withIndex("slug", (q) => q.eq("slug", slug))
+      .unique();
+
+    if (existing) {
+      throw new ConvexError({
+        code: "SLUG_TAKEN",
+        message: "A workspace with this URL already exists.",
+      });
+    }
+
+    const orgId = await ctx.db.insert("organizations", {
+      name: args.name.trim(),
+      slug,
+    });
 
     await ctx.db.insert("staff", {
       orgId,
