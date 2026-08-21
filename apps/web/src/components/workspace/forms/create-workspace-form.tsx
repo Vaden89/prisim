@@ -15,8 +15,14 @@ export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
   const [workspace_name, setWorkspaceName] = useState("");
   const createOrganization = useMutation(api.org_functions.createOrganization);
 
+  const slug = workspace_name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWorkspaceName(e.target.value.replace(/\s+/g, "-").toLowerCase());
+    setWorkspaceName(e.target.value);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,12 +31,11 @@ export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
     setLoading(true);
 
     try {
-      const orgId = await createOrganization({ name: workspace_name });
+      const orgId = await createOrganization({ name: workspace_name, slug });
       onSuccess?.(orgId);
     } catch (err) {
-      setError(getConvexErrorMessage(err));
-    } finally {
       setLoading(false);
+      setError(getConvexErrorMessage(err));
     }
   };
 
@@ -45,7 +50,7 @@ export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
       <div>
         <FormField
           placeholder=""
-          value={"prism.app/dev/" + workspace_name}
+          value={"prism.app/dev/" + slug}
           label="Workspace URL"
           name="url"
           readOnly
