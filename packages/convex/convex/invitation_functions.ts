@@ -117,10 +117,16 @@ export const createInvitations = mutation({
         .first();
 
       if (existingInvite) {
-        throw new ConvexError({
-          code: "EMAIL_ALREADY_INVITED",
-          message: `Email ${invitee.email} has already been invited to this workspace.`,
-        });
+        const isExpired = Date.parse(existingInvite.expiresAt) < Date.now();
+
+        if (!isExpired) {
+          throw new ConvexError({
+            code: "EMAIL_ALREADY_INVITED",
+            message: `Email ${invitee.email} has already been invited to this workspace.`,
+          });
+        }
+
+        await ctx.db.delete("invitations", existingInvite._id);
       }
 
       const invitationId = await ctx.db.insert("invitations", {
@@ -173,7 +179,7 @@ export const acceptInvitation = mutation({
 
     if (invitationExpiresAt && invitationExpiresAt < Date.now()) {
       throw new ConvexError({
-        code: "EXPIRED",
+        code: "INVITE_EXPIRED",
         message: "This invitation has expired.",
       });
     }
@@ -197,7 +203,7 @@ export const acceptInvitation = mutation({
       });
     }
 
-    const staff = ctx.db
+    const staff = await ctx.db
       .query("staff")
       .withIndex("org_user", (q) =>
         q.eq("orgId", invitation.orgId).eq("userId", user._id),

@@ -68,6 +68,12 @@ export default function InvitationPage() {
           router.push(`/dashboard/${invitation?.organization?._id}`);
           return;
         }
+        if (code === "INVITE_EXPIRED") {
+          toast.error("This invitation has expired, please request a new one.");
+          localStorage.removeItem("invitation-id");
+          router.push(`/dashboard`);
+          return;
+        }
         return;
       }
 
