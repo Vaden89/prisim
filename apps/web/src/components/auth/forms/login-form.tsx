@@ -26,17 +26,24 @@ export function LoginForm() {
       return;
     }
 
+    const invitationId = localStorage.getItem("invitation-id");
+    if (invitationId) {
+      localStorage.removeItem("invitation-id");
+      router.push(`/invite/${invitationId}`);
+      return;
+    }
+
     router.push("/dashboard");
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="w-full flex items-center gap-4 text-xs text-light-gray my-8">
+      <GithubLoginButton />
+      <div className="w-full flex items-center gap-4 text-xs text-light-gray my-2">
         <div className="w-full h-[0.5px] bg-light-gray/50" />
         <span>or</span>
         <div className="w-full h-[0.5px] bg-light-gray/50" />
       </div>
-      <GithubLoginButton />
       <FormField name="email" placeholder="Enter email address" type="email" />
       <FormField name="password" placeholder="Enter password" type="password" />
       {error && <p className="text-sm text-destructive">{error}</p>}
