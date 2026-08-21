@@ -30,17 +30,24 @@ export function RegisterForm() {
       return;
     }
 
+    const invitationId = localStorage.getItem("invitation-id");
+    if (invitationId) {
+      localStorage.removeItem("invitation-id");
+      router.push(`/invite/${invitationId}`);
+      return;
+    }
+
     router.push("/dashboard");
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <div className="w-full flex items-center gap-4 text-xs text-light-gray my-4">
+      <GithubButton />
+      <div className="w-full flex items-center gap-4 text-xs text-light-gray my-2">
         <div className="w-full h-px bg-light-gray/50" />
         <span>or</span>
         <div className="w-full h-px bg-light-gray/50" />
       </div>
-      <GithubButton />
       <div className="flex items-center gap-3">
         <FormField
           type="text"

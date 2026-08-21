@@ -1,13 +1,16 @@
 # LIST OF THINGS I NEED TO DO
+[] ADD BACKEND VALIDATION USING ZOD
+[] HANDLE ACCOUNT DELETION AND CASCADING DELETION OF ALL RELATED DATA
+[] INVESTIGATE WHY AUTH DROPS AFTER ROUTING INTO THE DASHBOARD AND THEM PICKS BACK UP
 [] ADD LOADING STATE FOR WHEN THE DASHBOARD CONTEXT IS LOADING (org, user and staff data)
 [x] ADD OG IMAGE
 [] REORDER DESIGN TOKENS ( LIGHTEST TO DARKEST )
 [] REPLACE ALL MY REPEATABLE CONVEX FUNCTIONS WITH CONVEX_HELPERS, ESPECIALLY WITH THE VALIDATION OF A STAFF
 [x] REPLACE LOADER TEXT WITH SKELETON LOADER
 [x] BUILD OUT THE TASK VIEW PAGE ( it's a full page with information about the task, including subtasks, and other metadata, on this page you can update information about the task, and when you do a save changes button appears )
-[] BUILD OUT THE OVERVIEW PAGE ( it should at minimum contain a list of all the tasks assgined to you across multiple boards, and other information )
+[x] BUILD OUT THE OVERVIEW PAGE ( it should at minimum contain a list of all the tasks assgined to you across multiple boards, and other information )
 [] BUILD OUT THE NOTIFICATIONS DROPDOWN ( INFORMING YOU WHEN AN AGENT CREATES A SUB TASK FOR A TASK YOU ARE ASSIGNED TO OR YOU CREATE )
-[] BUILD OUT THE SETTINGS PAGE ( allowing you to update your profile, workspace settings and invite people to you workspace )
+[x] BUILD OUT THE SETTINGS PAGE ( allowing you to update your profile, workspace settings and invite people to you workspace )
 [x] MOVE GETTING THE WORKSPACE ID OUT OF INDIVIDUAL COMPONENTS AND INTO THE DASHBOARD PROVIDER
 [] ADD FADE IN ANIMATIONS TO THE ENTIRE LANDING PAGE CONTENT
 [] CREATE EXTRA ANIMATION FOR THE HOW IT WORKS SECTION

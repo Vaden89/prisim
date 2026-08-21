@@ -2,7 +2,7 @@ import { OrganizationDetailsCard } from "./cards/organization-details-card";
 
 export function GeneralWorkspaceSection() {
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col">
+    <div className="w-full max-w-5xl mx-auto flex flex-col pb-20">
       <div className="mt-10 space-y-1">
         <h1 className="text-[32px] tracking-[-4%] leading-[120%] font-medium">
           General Settings

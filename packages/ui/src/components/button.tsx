@@ -7,13 +7,14 @@ import type { ComponentProps } from "react";
 
 type ButtonProps = Omit<ComponentProps<typeof BaseButton>, "className"> & {
   className?: string;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "destructive";
   loading?: boolean;
 };
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary: "bg-primary text-white hover:bg-primary/70",
   secondary: "bg-zinc-100 text-zinc-900 hover:bg-zinc-200",
+  destructive: "bg-destructive text-white hover:bg-destructive/70",
   ghost: "text-zinc-900 hover:bg-zinc-100",
 };
 

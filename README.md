@@ -29,7 +29,7 @@ The result is a task view that shows not only the original request, but also the
 1. On each merge into the main branch, the application pulls the updated codebase.
 2. A code ingestion script runs using tree-sitter.
 3. The script extracts function definitions, method definitions, and dependency information.
-4. That output is passed to a code embedding model such as `voyage-3-code`.
+4. That output is passed to a code embedding model such as `voyage-4-code`.
 5. The generated vectors are stored in a RAG-backed database for fast retrieval.
 
 This makes it easier for the agent to reason over the current codebase and surface the most relevant context for a task.
@@ -41,6 +41,7 @@ This repository is a Turborepo-based monorepo with separate apps and shared pack
 ### Apps and Packages
 
 - `apps/web`: the main web application
+- `apps/server`: the main server application
 - `packages/ui`: shared UI components
 - `packages/eslint-config`: shared ESLint configuration
 - `packages/typescript-config`: shared TypeScript configuration

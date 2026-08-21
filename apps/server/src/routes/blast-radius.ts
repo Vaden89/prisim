@@ -26,7 +26,6 @@ async function runBlastRadius(task: string, taskId: string, token: string) {
 blastRadiusRouter.post("/", async (c) => {
   const { task, taskId } = await c.req.json();
   const { token } = c.get("auth");
-
   void runBlastRadius(task, taskId, token);
 
   return c.json({ message: "Analysis started" }, 202);
