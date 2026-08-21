@@ -21,7 +21,17 @@ export default defineSchema({
   organizations: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
-  }),
+    slug: v.optional(v.string()),
+  }).index("slug", ["slug"]),
+
+  invitations: defineTable({
+    orgId: v.id("organizations"),
+    email: v.string(),
+    role: roleValidator,
+    expiresAt: v.string(),
+  })
+    .index("orgId", ["orgId"])
+    .index("org_email", ["orgId", "email"]),
 
   staff: defineTable({
     orgId: v.id("organizations"),
