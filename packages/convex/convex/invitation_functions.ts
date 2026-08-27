@@ -1,8 +1,44 @@
 import { api } from "./_generated/api";
-import { roleValidator } from "./schema";
 import { Id } from "./_generated/dataModel";
+import { Role, roleValidator } from "./schema";
 import { ConvexError, v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
+import {
+  action,
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
+
+async function requireOrgRole(
+  ctx: QueryCtx | MutationCtx,
+  orgId: Id<"organizations">,
+  allowed: Role[],
+) {
+  const user = await ctx.runQuery(api.auth.getCurrentUser, {});
+
+  if (!user) {
+    throw new ConvexError({
+      code: "USER_NOT_FOUND",
+      message: "Your account could not be found.",
+    });
+  }
+
+  const membership = await ctx.db
+    .query("staff")
+    .withIndex("org_user", (q) => q.eq("orgId", orgId).eq("userId", user._id))
+    .unique();
+
+  if (!membership || !allowed.includes(membership.role)) {
+    throw new ConvexError({
+      code: "FORBIDDEN",
+      message:
+        "You don't have permission to manage invitations for this workspace.",
+    });
+  }
+
+  return { user, membership };
+}
 
 export const invitationAction = action({
   args: {
@@ -18,7 +54,7 @@ export const invitationAction = action({
     if (!organization) {
       throw new ConvexError({
         code: "ORGANIZATION_NOT_FOUND",
-        message: "Organization not found, it has been disbabled or deleted",
+        message: "Organization not found, it has been disabled or deleted",
       });
     }
 
@@ -51,6 +87,7 @@ export const invitationAction = action({
       await ctx.runMutation(api.invitation_functions.deleteInvitations, {
         invitationIds: invitations.map((invitation) => invitation.id),
       });
+
       throw new ConvexError({
         code: "INVITATION_SEND_FAILED",
         message: "Failed to send invitations, please try again.",
@@ -64,25 +101,25 @@ export const getInvitations = query({
     workspaceId: v.id("organizations"),
   },
   handler: async (ctx, args) => {
+    await requireOrgRole(ctx, args.workspaceId, ["OWNER", "ADMIN"]);
+
     const invites = await ctx.db
       .query("invitations")
       .withIndex("orgId", (q) => q.eq("orgId", args.workspaceId))
       .collect();
 
-    return invites;
+    return invites.map(({ token: _token, ...rest }) => rest);
   },
 });
 
 export const getInvitation = query({
   args: {
-    invitationId: v.string(),
+    token: v.string(),
   },
   handler: async (ctx, args) => {
     const invitation = await ctx.db
       .query("invitations")
-      .withIndex("by_id", (q) =>
-        q.eq("_id", args.invitationId as Id<"invitations">),
-      )
+      .withIndex("by_token", (q) => q.eq("token", args.token))
       .first();
 
     if (!invitation) {
@@ -92,7 +129,8 @@ export const getInvitation = query({
     const organization = await ctx.db.get(invitation.orgId);
     const isExpired = Date.parse(invitation.expiresAt) < Date.now();
 
-    return { ...invitation, organization, isExpired };
+    const { token: _token, ...safe } = invitation;
+    return { ...safe, organization, isExpired };
   },
 });
 
@@ -102,41 +140,82 @@ export const createInvitations = mutation({
     invitees: v.array(v.object({ email: v.string(), role: roleValidator })),
   },
   handler: async (ctx, args) => {
+    const { membership } = await requireOrgRole(ctx, args.workspaceId, [
+      "OWNER",
+      "ADMIN",
+    ]);
+
     const now = Date.now();
     const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
     const expiry = new Date(now + sevenDaysInMs);
 
-    let invitations: { email: string; id: Id<"invitations"> }[] = [];
+    const invitations: {
+      email: string;
+      id: Id<"invitations">;
+      token: string;
+    }[] = [];
 
     for (const invitee of args.invitees) {
+      const email = invitee.email.trim().toLowerCase();
+      if (membership.role === "ADMIN" && invitee.role !== "DEFAULT") {
+        throw new ConvexError({
+          code: "FORBIDDEN_ROLE",
+          message:
+            "Admins can only invite members. Ask an owner to assign elevated roles.",
+        });
+      }
+
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("email", (q) => q.eq("email", email))
+        .unique();
+
+      if (existingUser) {
+        const existingStaff = await ctx.db
+          .query("staff")
+          .withIndex("org_user", (q) =>
+            q.eq("orgId", args.workspaceId).eq("userId", existingUser._id),
+          )
+          .unique();
+
+        if (existingStaff) {
+          throw new ConvexError({
+            code: "ALREADY_MEMBER",
+            message: `${email} is already a member of this workspace.`,
+          });
+        }
+      }
+
       const existingInvite = await ctx.db
         .query("invitations")
         .withIndex("org_email", (q) =>
-          q.eq("orgId", args.workspaceId).eq("email", invitee.email),
+          q.eq("orgId", args.workspaceId).eq("email", email),
         )
         .first();
 
       if (existingInvite) {
-        const isExpired = Date.parse(existingInvite.expiresAt) < Date.now();
+        const isExpired = Date.parse(existingInvite.expiresAt) < now;
 
         if (!isExpired) {
           throw new ConvexError({
             code: "EMAIL_ALREADY_INVITED",
-            message: `Email ${invitee.email} has already been invited to this workspace.`,
+            message: `Email ${email} has already been invited to this workspace.`,
           });
         }
 
-        await ctx.db.delete("invitations", existingInvite._id);
+        await ctx.db.delete(existingInvite._id);
       }
 
+      const token = crypto.randomUUID() + crypto.randomUUID();
       const invitationId = await ctx.db.insert("invitations", {
         orgId: args.workspaceId,
-        email: invitee.email,
+        email,
+        token,
         role: invitee.role,
         expiresAt: String(expiry),
       });
 
-      invitations.push({ email: invitee.email, id: invitationId });
+      invitations.push({ email, id: invitationId, token });
     }
 
     return invitations;
@@ -148,7 +227,18 @@ export const deleteInvitation = mutation({
     invitationId: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.invitationId as Id<"invitations">);
+    const id = args.invitationId as Id<"invitations">;
+    const invitation = await ctx.db.get(id);
+
+    if (!invitation) {
+      throw new ConvexError({
+        code: "NOT_FOUND",
+        message: "This invitation no longer exists.",
+      });
+    }
+
+    await requireOrgRole(ctx, invitation.orgId, ["OWNER", "ADMIN"]);
+    await ctx.db.delete(id);
   },
 });
 
@@ -165,16 +255,21 @@ export const deleteInvitations = mutation({
 
 export const acceptInvitation = mutation({
   args: {
-    invitationId: v.string(),
+    token: v.string(),
   },
   handler: async (ctx, args) => {
-    const invitation = await ctx.db.get(args.invitationId as Id<"invitations">);
+    const invitation = await ctx.db
+      .query("invitations")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
     if (!invitation) {
       throw new ConvexError({
         code: "NOT_FOUND",
         message: "This invitation does not exist.",
       });
     }
+
     const invitationExpiresAt = Date.parse(invitation.expiresAt);
 
     if (invitationExpiresAt && invitationExpiresAt < Date.now()) {
@@ -207,7 +302,8 @@ export const acceptInvitation = mutation({
       .query("staff")
       .withIndex("org_user", (q) =>
         q.eq("orgId", invitation.orgId).eq("userId", user._id),
-      );
+      )
+      .unique();
 
     if (staff) {
       throw new ConvexError({
@@ -222,7 +318,7 @@ export const acceptInvitation = mutation({
       role: invitation.role,
     });
 
-    await ctx.db.delete("invitations", args.invitationId as Id<"invitations">);
+    await ctx.db.delete(invitation._id);
 
     return invitation.orgId;
   },
