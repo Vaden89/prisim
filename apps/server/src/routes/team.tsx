@@ -15,11 +15,11 @@ teamRouter.post("/invite", async (c) => {
   const { orgName, invitations } = await c.req.json();
 
   await Promise.all(
-    invitations.map(async (invitee: { id: string; email: string }) => {
+    invitations.map(async (invitee: { token: string; email: string }) => {
       const { html, text } = await render(
         <InviteToWorkspaceEmail
           workspaceName={orgName}
-          inviteUrl={`${FRONTEND_URL}/invite/${invitee.id}`}
+          inviteUrl={`${FRONTEND_URL}/invite/${invitee.token}`}
         />,
       );
 

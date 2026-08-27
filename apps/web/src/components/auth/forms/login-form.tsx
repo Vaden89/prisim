@@ -26,10 +26,10 @@ export function LoginForm() {
       return;
     }
 
-    const invitationId = localStorage.getItem("invitation-id");
-    if (invitationId) {
-      localStorage.removeItem("invitation-id");
-      router.push(`/invite/${invitationId}`);
+    const inviteToken = localStorage.getItem("invite-token");
+    if (inviteToken) {
+      localStorage.removeItem("invite-token");
+      router.push(`/invite/${inviteToken}`);
       return;
     }
 

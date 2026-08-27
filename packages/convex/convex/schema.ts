@@ -27,10 +27,12 @@ export default defineSchema({
   invitations: defineTable({
     orgId: v.id("organizations"),
     email: v.string(),
+    token: v.string(),
     role: roleValidator,
     expiresAt: v.string(),
   })
     .index("orgId", ["orgId"])
+    .index("by_token", ["token"])
     .index("org_email", ["orgId", "email"]),
 
   staff: defineTable({
