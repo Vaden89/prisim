@@ -12,26 +12,26 @@ import { NotFoundState } from "@/components/common/not-found-state";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 
 export default function InvitationPage() {
-  const { id } = useParams();
   const router = useRouter();
+  const { token } = useParams();
+  const [isAccepting, setIsAccepting] = useState(false);
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const invitation = useQuery(
     api.invitation_functions.getInvitation,
-    id ? { invitationId: id as string } : "skip",
+    token ? { token: token as string } : "skip",
   );
   const acceptInvitation = useMutation(
     api.invitation_functions.acceptInvitation,
   );
-  const [isAccepting, setIsAccepting] = useState(false);
-  const { isAuthenticated, isLoading } = useConvexAuth();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && id) {
-      router.push(`/login?invitation-id=${id}`);
-      localStorage.setItem("invitation-id", id as string);
+    if (!isLoading && !isAuthenticated && token) {
+      localStorage.setItem("invite-token", token as string);
+      router.push(`/login?invite-token=${token}`);
     }
-  }, [isLoading, isAuthenticated, router, id]);
+  }, [isLoading, isAuthenticated, router, token]);
 
-  if (!id) return <NotFoundState />;
+  if (!token) return <NotFoundState />;
 
   if (invitation === undefined || isLoading)
     return (
@@ -53,8 +53,8 @@ export default function InvitationPage() {
   async function handleInvitation() {
     setIsAccepting(true);
     try {
-      const orgId = await acceptInvitation({ invitationId: id as string });
-      localStorage.removeItem("invitation-id");
+      const orgId = await acceptInvitation({ token: token as string });
+      localStorage.removeItem("invite-token");
       router.push(`/dashboard/${orgId}`);
     } catch (error) {
       setIsAccepting(false);
@@ -64,13 +64,13 @@ export default function InvitationPage() {
         const code = err.data.code;
         if (code === "ALREADY_STAFF") {
           toast.error("You are already a staff member of this organization.");
-          localStorage.removeItem("invitation-id");
+          localStorage.removeItem("invite-token");
           router.push(`/dashboard/${invitation?.organization?._id}`);
           return;
         }
         if (code === "INVITE_EXPIRED") {
           toast.error("This invitation has expired, please request a new one.");
-          localStorage.removeItem("invitation-id");
+          localStorage.removeItem("invite-token");
           router.push(`/dashboard`);
           return;
         }
