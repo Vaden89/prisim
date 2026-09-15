@@ -4,13 +4,23 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api": "./convex/_generated/api.js",
-    "./dataModel": "./convex/_generated/dataModel.js",
-    "./auth": "./convex/auth.ts"
+    "./api": {
+      "types": "./dist/_generated/api.d.ts",
+      "default": "./convex/_generated/api.js"
+    },
+    "./dataModel": {
+      "types": "./dist/_generated/dataModel.d.ts",
+      "default": "./convex/_generated/dataModel.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "default": "./convex/auth.ts"
+    }
   },
   "scripts": {
     "dev": "convex dev",
     "deploy": "convex deploy",
+    "build": "tsc --project tsconfig.build.json && mkdir -p dist/_generated && cp convex/_generated/*.d.ts dist/_generated/",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
