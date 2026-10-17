@@ -9,6 +9,7 @@ import {
   type MutationCtx,
   type QueryCtx,
 } from "./_generated/server";
+import { staffMutation, staffQuery } from "./lib/wrappers";
 
 async function requireOrgRole(
   ctx: QueryCtx | MutationCtx,
@@ -60,7 +61,11 @@ export const invitationAction = action({
 
     const invitations = await ctx.runMutation(
       api.invitation_functions.createInvitations,
-      { workspaceId: args.workspaceId, invitees: args.invitees },
+      {
+        workspaceId: args.workspaceId,
+        invitees: args.invitees,
+        orgId: args.workspaceId,
+      },
     );
 
     const serverUrl = process.env.SERVER_URL;
@@ -96,16 +101,16 @@ export const invitationAction = action({
   },
 });
 
-export const getInvitations = query({
+export const getInvitations = staffQuery({
   args: {
-    workspaceId: v.id("organizations"),
+    orgId: v.id("organizations"),
   },
   handler: async (ctx, args) => {
-    await requireOrgRole(ctx, args.workspaceId, ["OWNER", "ADMIN"]);
+    await requireOrgRole(ctx, args.orgId, ["OWNER", "ADMIN"]);
 
     const invites = await ctx.db
       .query("invitations")
-      .withIndex("orgId", (q) => q.eq("orgId", args.workspaceId))
+      .withIndex("orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
 
     return invites.map(({ token: _token, ...rest }) => rest);
@@ -134,7 +139,7 @@ export const getInvitation = query({
   },
 });
 
-export const createInvitations = mutation({
+export const createInvitations = staffMutation({
   args: {
     workspaceId: v.id("organizations"),
     invitees: v.array(v.object({ email: v.string(), role: roleValidator })),

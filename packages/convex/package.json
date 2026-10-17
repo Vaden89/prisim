@@ -26,7 +26,8 @@
   "dependencies": {
     "@convex-dev/better-auth": "latest",
     "better-auth": "~1.6.15",
-    "convex": "latest"
+    "convex": "latest",
+    "convex-helpers": "^0.1.124"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
