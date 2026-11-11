@@ -3,12 +3,17 @@ import { api } from "@repo/convex/api";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { BoardTable } from "@/components/boards/board-table";
+import { useDashboard } from "@/contexts/dashboard-provider";
 
 export default function BoardPage() {
   const params = useParams();
+  const { org } = useDashboard();
   const boardId = params.boardId as string;
 
-  const board = useQuery(api.board_functions.getBoardWithTasks, { boardId });
+  const board = useQuery(api.board_functions.getBoardWithTasks, {
+    boardId,
+    orgId: org.id,
+  });
 
   if (board === undefined) {
     return (

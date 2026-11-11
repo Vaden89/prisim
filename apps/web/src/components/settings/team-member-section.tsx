@@ -123,7 +123,7 @@ function ActiveMembersSection() {
 function PendingInvitations() {
   const { org } = useDashboard();
   const invites = useQuery(api.invitation_functions.getInvitations, {
-    workspaceId: org.id,
+    orgId: org.id,
   });
 
   const columns: TableColumn<OrgInvitation>[] = [

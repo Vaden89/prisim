@@ -49,7 +49,7 @@ export function CreateBoardModal({ trigger }: { trigger?: ReactNode }) {
     setLoading(true);
 
     try {
-      await createBoard(parsed.data);
+      await createBoard({ ...parsed.data, orgId });
       handleOpenChange(false);
       toast.success("Board created successfully");
     } catch (err) {

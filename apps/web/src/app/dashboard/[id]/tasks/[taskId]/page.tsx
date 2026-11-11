@@ -1,14 +1,16 @@
 "use client";
 import { TaskView } from "@/components/tasks/task-view";
+import { useDashboard } from "@/contexts/dashboard-provider";
 import { api } from "@repo/convex/api";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 
 export default function TaskPage() {
   const params = useParams();
+  const { org } = useDashboard();
   const taskId = params.taskId as string;
 
-  const task = useQuery(api.task_functions.getTask, { taskId });
+  const task = useQuery(api.task_functions.getTask, { taskId, orgId: org.id });
 
   if (task === undefined) {
     return (

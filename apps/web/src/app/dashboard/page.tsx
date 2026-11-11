@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 import { Button, Select, SelectItem } from "@repo/ui";
 import { Spinner } from "@/components/common/spinner";
 import { useConvexAuth, useQuery } from "convex/react";
+import { CreateWorkspaceModal } from "@/components/workspace/modals/create-workspace-modal";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string>("");
   const { isAuthenticated } = useConvexAuth();
+  const [selected, setSelected] = useState<string>("");
   const organizations = useQuery(
     api.org_functions.getOrganizations,
     isAuthenticated ? {} : "skip",
@@ -52,17 +53,20 @@ export default function DashboardPage() {
           </span>
         </div>
         <div className="flex flex-col gap-4">
-          <Select
-            onValueChange={setSelected}
-            placeholder="Choose a workspace"
-            value={organizations?.find((v) => v._id === selected)?.name ?? ""}
-          >
-            {organizations.map((org) => (
-              <SelectItem key={org._id} value={org._id}>
-                {org.name}
-              </SelectItem>
-            ))}
-          </Select>
+          <div className="flex items-center gap-4">
+            <Select
+              onValueChange={setSelected}
+              placeholder="Choose a workspace"
+              value={organizations?.find((v) => v._id === selected)?.name ?? ""}
+            >
+              {organizations.map((org) => (
+                <SelectItem key={org._id} value={org._id}>
+                  {org.name}
+                </SelectItem>
+              ))}
+            </Select>
+            <CreateWorkspaceModal />
+          </div>
           <Button
             className="w-full rounded-full"
             disabled={!selected}

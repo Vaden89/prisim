@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { commands } from "@uiw/react-md-editor";
+import { Id } from "@repo/convex/dataModel";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 const Markdown = dynamic(
@@ -73,7 +74,7 @@ export function TaskView({ task }: { task: TaskType }) {
 
     setSaving(true);
     try {
-      await updateTask({ taskId: task._id, ...parsed.data });
+      await updateTask({ taskId: task._id, ...parsed.data, orgId: orgId });
       toast.success("Changes saved");
     } catch (err) {
       toast.error(getConvexErrorMessage(err));
@@ -251,7 +252,9 @@ function StatusSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const statuses = useQuery(api.status_functions.getStatuses, { orgId });
+  const statuses = useQuery(api.status_functions.getStatuses, {
+    orgId: orgId as Id<"organizations">,
+  });
   const options = statuses ?? [];
 
   const currentColor =
@@ -297,7 +300,9 @@ function AssigneeSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const members = useQuery(api.org_functions.getOrgMembers, { orgId });
+  const members = useQuery(api.org_functions.getOrgMembers, {
+    orgId: orgId as Id<"organizations">,
+  });
   const options = members ?? [];
 
   const current = options.find((m) => m.value === value);
