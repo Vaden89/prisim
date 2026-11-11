@@ -1,5 +1,6 @@
-import { ConvexHttpClient } from "convex/browser";
 import { api } from "@repo/convex/api";
+import { Id } from "@repo/convex/dataModel";
+import { ConvexHttpClient } from "convex/browser";
 
 const siteUrl = process.env["CONVEX_URL"];
 
@@ -32,9 +33,11 @@ export const updateTask = async (
   token: string,
   isReasoning: boolean,
   taskId: string,
+  orgId: string,
 ) => {
   await getConvexClient(token).mutation(api.task_functions.updateTask, {
     isReasoning,
     taskId,
+    orgId: orgId as Id<"organizations">,
   });
 };

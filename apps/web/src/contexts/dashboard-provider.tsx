@@ -1,5 +1,6 @@
 "use client";
 import { api } from "@repo/convex/api";
+import { Id } from "@repo/convex/dataModel";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { UserType } from "@/types/user.type";
@@ -23,7 +24,7 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
 
 export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const params = useParams();
-  const orgId = params.id as string;
+  const orgId = params.id as Id<"organizations">;
 
   const user = useQuery(api.auth.getCurrentUser);
   const org = useQuery(api.org_functions.getOrganization, { orgId });

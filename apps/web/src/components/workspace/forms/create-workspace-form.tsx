@@ -1,7 +1,8 @@
 "use client";
+import { toast } from "sonner";
 import { useState } from "react";
-import { useMutation } from "convex/react";
 import { api } from "@repo/convex/api";
+import { useMutation } from "convex/react";
 import { Button, FormField } from "@repo/ui";
 import { getConvexErrorMessage } from "@/lib/convex-error";
 
@@ -10,7 +11,6 @@ interface CreateWorkspaceProps {
 }
 
 export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [workspace_name, setWorkspaceName] = useState("");
   const createOrganization = useMutation(api.org_functions.createOrganization);
@@ -27,23 +27,23 @@ export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
       const orgId = await createOrganization({ name: workspace_name, slug });
+      toast.success("Workspace created successfully");
       onSuccess?.(orgId);
     } catch (err) {
       setLoading(false);
-      setError(getConvexErrorMessage(err));
+      toast.error(getConvexErrorMessage(err));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex flex-col space-y-4">
+    <form onSubmit={handleSubmit} className="w-full flex flex-col space-y-6">
       <FormField
         placeholder="Your organization/workspace name"
-        label="Organization Name"
+        label="Workspace Name"
         name="name"
         onChange={handleInput}
       />
@@ -55,9 +55,6 @@ export const CreateWorkspaceForm = ({ onSuccess }: CreateWorkspaceProps) => {
           name="url"
           readOnly
         />
-        {error && (
-          <p className="text-xs text-start text-destructive">{error}</p>
-        )}
       </div>
       <Button loading={loading} type="submit" className="rounded-full py-3">
         Create Workspace

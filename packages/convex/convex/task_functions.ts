@@ -1,11 +1,13 @@
-import { ConvexError, v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
 import { authComponent } from "./auth";
+import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { ConvexError, v } from "convex/values";
+import { action, mutation } from "./_generated/server";
+import { staffMutation, staffQuery } from "./lib/wrappers";
 
 export const createTask = mutation({
   args: {
+    orgId: v.id("organizations"),
     title: v.string(),
     description: v.string(),
     boardId: v.string(),
@@ -45,6 +47,13 @@ export const createTask = mutation({
       });
     }
 
+    if (board.orgId !== args.orgId) {
+      throw new ConvexError({
+        code: "RESOURCE_NOT_IN_ORGANIZATION",
+        message: "The selected board does not belong to this organization",
+      });
+    }
+
     const staff = await ctx.db
       .query("staff")
       .withIndex("org_user", (q) =>
@@ -59,13 +68,36 @@ export const createTask = mutation({
       });
     }
 
+    const assignee = await ctx.db
+      .query("staff")
+      .withIndex("org_user", (q) =>
+        q.eq("orgId", board.orgId).eq("userId", args.assignee as Id<"users">),
+      )
+      .unique();
+
+    if (!assignee) {
+      throw new ConvexError({
+        code: "ASSIGNEE_NOT_FOUND",
+        message: "The selected assignee is not a member of this organization",
+      });
+    }
+
+    const status = await ctx.db.get(args.status as Id<"statuses">);
+
+    if (!status || status.orgId !== board.orgId) {
+      throw new ConvexError({
+        code: "STATUS_NOT_FOUND",
+        message: "The selected status does not belong to this organization",
+      });
+    }
+
     const taskId = await ctx.db.insert("tasks", {
       title: args.title,
       description: args.description,
       boardId: args.boardId as Id<"boards">,
       assignee: args.assignee as Id<"users">,
       creator: user._id,
-      status: args.status as Id<"statuses">,
+      status: status._id,
       priority: args.priority,
       isReasoning: args.isReasoning ?? false,
     });
@@ -76,6 +108,7 @@ export const createTask = mutation({
 
 export const createTaskWithAnalysis = action({
   args: {
+    orgId: v.id("organizations"),
     title: v.string(),
     description: v.string(),
     boardId: v.string(),
@@ -86,6 +119,8 @@ export const createTaskWithAnalysis = action({
   },
   handler: async (ctx, args): Promise<Id<"tasks">> => {
     const { token, ...taskArgs } = args;
+
+    // Check if the org id passed is the same as the org that owns the board
 
     const taskId: Id<"tasks"> = await ctx.runMutation(
       api.task_functions.createTask,
@@ -108,6 +143,7 @@ export const createTaskWithAnalysis = action({
         body: JSON.stringify({
           task: `${taskArgs.title}\n\n${taskArgs.description}`,
           taskId,
+          orgId: taskArgs.orgId,
         }),
       });
 
@@ -118,6 +154,7 @@ export const createTaskWithAnalysis = action({
       console.error("Failed to trigger blast-radius analysis", error);
       await ctx.runMutation(api.task_functions.updateTask, {
         taskId,
+        orgId: taskArgs.orgId as Id<"organizations">,
         isReasoning: false,
       });
     }
@@ -126,26 +163,11 @@ export const createTaskWithAnalysis = action({
   },
 });
 
-export const getTasksByBoard = query({
+export const getTasksByBoard = staffQuery({
   args: {
-    boardId: v.string(),
+    boardId: v.id("boards"),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return [];
-    }
-
     const board = await ctx.db.get(args.boardId as Id<"boards">);
 
     if (!board) {
@@ -155,17 +177,10 @@ export const getTasksByBoard = query({
       });
     }
 
-    const staff = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", board.orgId).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staff) {
+    if (board.orgId !== args.orgId) {
       throw new ConvexError({
-        code: "STAFF_NOT_FOUND",
-        message: "You are not a member of this organization",
+        code: "RESOURCE_NOT_IN_ORGANIZATION",
+        message: "The selected board does not belong to this organization",
       });
     }
 
@@ -174,55 +189,40 @@ export const getTasksByBoard = query({
       .withIndex("boardId", (q) =>
         q.eq("boardId", args.boardId as Id<"boards">),
       )
+      .order("desc")
       .collect();
 
     return tasks;
   },
 });
 
-export const getTask = query({
+export const getTask = staffQuery({
   args: {
     taskId: v.string(),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return null;
-    }
-
     const task = await ctx.db.get(args.taskId as Id<"tasks">);
 
     if (!task) {
-      return null;
+      throw new ConvexError({
+        code: "TASK_NOT_FOUND",
+        message: "This task does not exist",
+      });
     }
 
     const board = await ctx.db.get(task.boardId);
 
     if (!board) {
-      return null;
+      throw new ConvexError({
+        code: "INTERNAL_ERROR",
+        message: "An unexpected error occurred",
+      });
     }
 
-    const staff = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", board.orgId).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staff) {
+    if (board.orgId !== args.orgId) {
       throw new ConvexError({
-        code: "STAFF_NOT_FOUND",
-        message: "You are not a member of this organization",
+        code: "RESOURCE_NOT_IN_ORGANIZATION",
+        message: "This task does not belong to the selected organization",
       });
     }
 
@@ -256,7 +256,7 @@ export const getTask = query({
   },
 });
 
-export const updateTask = mutation({
+export const updateTask = staffMutation({
   args: {
     taskId: v.string(),
     title: v.optional(v.string()),
@@ -267,27 +267,6 @@ export const updateTask = mutation({
     isReasoning: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      throw new ConvexError({
-        code: "UNAUTHENTICATED",
-        message: "You must be logged in to update a task",
-      });
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      throw new ConvexError({
-        code: "USER_NOT_FOUND",
-        message: "User not found",
-      });
-    }
-
     const task = await ctx.db.get(args.taskId as Id<"tasks">);
 
     if (!task) {
@@ -306,17 +285,10 @@ export const updateTask = mutation({
       });
     }
 
-    const staff = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", board.orgId).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staff) {
+    if (board.orgId !== args.orgId) {
       throw new ConvexError({
-        code: "STAFF_NOT_FOUND",
-        message: "You are not a member of this organization",
+        code: "RESOURCE_NOT_IN_ORGANIZATION",
+        message: "This task does not belong to the selected organization",
       });
     }
 
@@ -331,9 +303,34 @@ export const updateTask = mutation({
 
     if (args.title !== undefined) patch.title = args.title;
     if (args.description !== undefined) patch.description = args.description;
-    if (args.assignee !== undefined)
+    if (args.assignee !== undefined) {
+      const assignee = await ctx.db
+        .query("staff")
+        .withIndex("org_user", (q) =>
+          q.eq("orgId", board.orgId).eq("userId", args.assignee as Id<"users">),
+        )
+        .unique();
+
+      if (!assignee) {
+        throw new ConvexError({
+          code: "ASSIGNEE_NOT_FOUND",
+          message: "The selected assignee is not a member of this organization",
+        });
+      }
       patch.assignee = args.assignee as Id<"users">;
-    if (args.status !== undefined) patch.status = args.status as Id<"statuses">;
+    }
+    if (args.status !== undefined) {
+      const status = await ctx.db.get(args.status as Id<"statuses">);
+
+      if (!status || status.orgId !== board.orgId) {
+        throw new ConvexError({
+          code: "STATUS_NOT_FOUND",
+          message: "The selected status does not belong to this organization",
+        });
+      }
+
+      patch.status = status._id;
+    }
     if (args.priority !== undefined) patch.priority = args.priority;
     if (args.isReasoning !== undefined) patch.isReasoning = args.isReasoning;
 
@@ -341,32 +338,19 @@ export const updateTask = mutation({
   },
 });
 
-export const getMyTasks = query({
-  args: {},
-  handler: async (ctx) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return [];
-    }
-
+export const getMyTasks = staffQuery({
+  args: {
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
     const assignedTasks = await ctx.db
       .query("tasks")
-      .withIndex("assignee", (q) => q.eq("assignee", user._id))
+      .withIndex("assignee", (q) => q.eq("assignee", ctx.user._id))
       .collect();
 
     const createdTasks = await ctx.db
       .query("tasks")
-      .withIndex("creator", (q) => q.eq("creator", user._id))
+      .withIndex("creator", (q) => q.eq("creator", ctx.user._id))
       .collect();
 
     const taskMap = new Map<string, (typeof assignedTasks)[number]>();
@@ -381,23 +365,30 @@ export const getMyTasks = query({
 
     const tasks = Array.from(taskMap.values());
 
-    return await Promise.all(
+    const tasksWithRelationships = await Promise.all(
       tasks.map(async (task) => {
-        const [board, status] = await Promise.all([
-          ctx.db.get(task.boardId),
-          ctx.db.get(task.status),
-        ]);
+        const board = await ctx.db.get(task.boardId);
+
+        if (!board || board.orgId !== args.orgId) {
+          return null;
+        }
+
+        const status = await ctx.db.get(task.status);
 
         return {
           ...task,
-          board: board
-            ? { _id: board._id, name: board.name, orgId: board.orgId }
-            : null,
+          board: { _id: board._id, name: board.name, orgId: board.orgId },
           status: status
             ? { _id: status._id, name: status.name, color: status.color }
             : null,
         };
       }),
     );
+
+    const validTasks = tasksWithRelationships.filter(
+      (task): task is NonNullable<typeof task> => task !== null,
+    );
+
+    return validTasks.sort((a, b) => b._creationTime - a._creationTime);
   },
 });

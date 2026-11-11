@@ -83,7 +83,9 @@ const columns: TableColumn<MyTask>[] = [
 export function UpcomingTasksCard() {
   const router = useRouter();
   const { org } = useDashboard();
-  const tasks = useQuery(api.task_functions.getMyTasks);
+  const tasks = useQuery(api.task_functions.getMyTasks, {
+    orgId: org.id,
+  });
 
   return (
     <div className="w-full lg:col-span-2 p-4 bg-outline-gray-800 border border-[#1F1F20] rounded-2xl mt-4 lg:mt-0">

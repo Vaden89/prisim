@@ -12,6 +12,8 @@ import type * as auth from "../auth.js";
 import type * as board_functions from "../board_functions.js";
 import type * as http from "../http.js";
 import type * as invitation_functions from "../invitation_functions.js";
+import type * as lib_helpers_auth from "../lib/helpers/auth.js";
+import type * as lib_wrappers from "../lib/wrappers.js";
 import type * as org_functions from "../org_functions.js";
 import type * as status_functions from "../status_functions.js";
 import type * as sub_task_functions from "../sub_task_functions.js";
@@ -28,6 +30,8 @@ declare const fullApi: ApiFromModules<{
   board_functions: typeof board_functions;
   http: typeof http;
   invitation_functions: typeof invitation_functions;
+  "lib/helpers/auth": typeof lib_helpers_auth;
+  "lib/wrappers": typeof lib_wrappers;
   org_functions: typeof org_functions;
   status_functions: typeof status_functions;
   sub_task_functions: typeof sub_task_functions;

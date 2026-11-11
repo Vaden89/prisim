@@ -3,12 +3,14 @@
 import { cn } from "./cn";
 import { Button as BaseButton } from "@base-ui/react/button";
 
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 type ButtonProps = Omit<ComponentProps<typeof BaseButton>, "className"> & {
-  className?: string;
-  variant?: "primary" | "secondary" | "ghost" | "destructive";
   loading?: boolean;
+  className?: string;
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
+  variant?: "primary" | "secondary" | "ghost" | "destructive";
 };
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
@@ -49,6 +51,8 @@ export function Button({
   loading = false,
   disabled,
   children,
+  icon,
+  iconPosition = "left",
   ...props
 }: ButtonProps) {
   const baseStyling =
@@ -68,8 +72,12 @@ export function Button({
           <Spinner />
         </span>
       )}
-      <span className={cn("inline-flex items-center", loading && "invisible")}>
+      <span
+        className={cn("inline-flex items-center gap-2", loading && "invisible")}
+      >
+        {icon && iconPosition === "left" && <span>{icon}</span>}
         {children}
+        {icon && iconPosition === "right" && <span>{icon}</span>}
       </span>
     </BaseButton>
   );

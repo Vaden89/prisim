@@ -21,11 +21,11 @@ export function Header() {
 
   const board = useQuery(
     api.board_functions.getBoardWithTasks,
-    boardId ? { boardId } : "skip",
+    boardId ? { boardId, orgId } : "skip",
   );
   const task = useQuery(
     api.task_functions.getTask,
-    taskId ? { taskId } : "skip",
+    taskId ? { taskId, orgId } : "skip",
   );
 
   const crumbs: Crumb[] = [{ label: org.name, href: `/dashboard/${orgId}` }];

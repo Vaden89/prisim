@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 export function AddTaskModal({ boardId }: { boardId?: string }) {
+  const { org } = useDashboard();
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,7 +66,7 @@ export function AddTaskModal({ boardId }: { boardId?: string }) {
         return;
       }
 
-      await createTask({ ...parsed.data, token });
+      await createTask({ ...parsed.data, orgId: org.id, token });
       handleOpenChange(false);
       toast.success("Task created", {
         description: `"${parsed.data.title}" was added successfully.`,

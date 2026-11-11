@@ -1,7 +1,11 @@
-import { authComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import {
+  staffMutation,
+  staffQuery,
+  userMutation,
+  userQuery,
+} from "./lib/wrappers";
 
 const DEFAULT_STATUSES = [
   { name: "backlog", color: "#8D8D8D" },
@@ -9,21 +13,12 @@ const DEFAULT_STATUSES = [
   { name: "completed", color: "#10B981" },
 ] as const;
 
-export const createOrganization = mutation({
+export const createOrganization = userMutation({
   args: {
     name: v.string(),
-    slug: v.optional(v.string()),
+    slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      throw new ConvexError({
-        code: "UNAUTHENTICATED",
-        message: "You must be signed in to create a workspace.",
-      });
-    }
-
     if (args.name.trim().length === 0) {
       throw new ConvexError({
         code: "INVALID_NAME",
@@ -31,36 +26,9 @@ export const createOrganization = mutation({
       });
     }
 
-    const slug =
-      args.slug?.trim() ||
-      args.name
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      throw new ConvexError({
-        code: "USER_NOT_FOUND",
-        message: "Your account could not be found.",
-      });
-    }
-
-    if (slug.length === 0) {
-      throw new ConvexError({
-        code: "INVALID_SLUG",
-        message: "Workspace name must contain at least one letter or number.",
-      });
-    }
-
     const existing = await ctx.db
       .query("organizations")
-      .withIndex("slug", (q) => q.eq("slug", slug))
+      .withIndex("slug", (q) => q.eq("slug", args.slug))
       .unique();
 
     if (existing) {
@@ -72,12 +40,12 @@ export const createOrganization = mutation({
 
     const orgId = await ctx.db.insert("organizations", {
       name: args.name.trim(),
-      slug,
+      slug: args.slug?.trim(),
     });
 
     await ctx.db.insert("staff", {
       orgId,
-      userId: user._id,
+      userId: ctx.user._id,
       role: "OWNER",
     });
 
@@ -93,27 +61,12 @@ export const createOrganization = mutation({
   },
 });
 
-export const getOrganizations = query({
+export const getOrganizations = userQuery({
   args: {},
-  handler: async (ctx) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return null;
-    }
-
+  handler: async (ctx, args) => {
     const staffRecords = await ctx.db
       .query("staff")
-      .withIndex("userId", (q) => q.eq("userId", user._id))
+      .withIndex("userId", (q) => q.eq("userId", ctx.user._id))
       .collect();
 
     const organizations = await Promise.all(
@@ -127,93 +80,33 @@ export const getOrganizations = query({
   },
 });
 
-export const getOrganization = query({
-  args: {
-    orgId: v.string(),
-  },
+export const getOrganization = staffQuery({
+  args: {},
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return null;
-    }
-
-    const staff = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", args.orgId as Id<"organizations">).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staff) {
-      return null;
-    }
-
     const org = await ctx.db.get(args.orgId as Id<"organizations">);
 
     if (!org) {
-      return null;
+      throw new ConvexError({
+        code: "ORG_NOT_FOUND",
+        message: "The organization could not be found.",
+      });
     }
 
-    return { ...org, role: staff.role };
+    return { ...org, role: ctx.staff.role };
   },
 });
 
-export const updateOrganization = mutation({
+export const updateOrganization = staffMutation({
   args: {
-    orgId: v.string(),
+    orgId: v.id("organizations"),
     name: v.optional(v.string()),
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
+    if (ctx.staff.role !== "OWNER") {
       throw new ConvexError({
-        code: "UNAUTHENTICATED",
-        message: "You must be signed in to update a workspace.",
-      });
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      throw new ConvexError({
-        code: "USER_NOT_FOUND",
-        message: "Your account could not be found.",
-      });
-    }
-
-    const staff = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", args.orgId as Id<"organizations">).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staff) {
-      throw new ConvexError({
-        code: "STAFF_NOT_FOUND",
-        message: "You are not a member of this organization.",
-      });
-    }
-
-    if (staff.role !== "OWNER") {
-      throw new ConvexError({
-        code: "FORBIDDEN",
-        message: "Only the workspace owner can update these details.",
+        code: "UNAUTHORIZED",
+        message: "Only the owner can update this workspace.",
       });
     }
 
@@ -242,40 +135,14 @@ export const updateOrganization = mutation({
   },
 });
 
-export const getOrgMembers = query({
+export const getOrgMembers = staffQuery({
   args: {
-    orgId: v.string(),
+    orgId: v.id("organizations"),
   },
   handler: async (ctx, args) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-
-    if (!authUser) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
-
-    if (!user) {
-      return null;
-    }
-
-    const staffRecord = await ctx.db
-      .query("staff")
-      .withIndex("org_user", (q) =>
-        q.eq("orgId", args.orgId as Id<"organizations">).eq("userId", user._id),
-      )
-      .unique();
-
-    if (!staffRecord) {
-      return null;
-    }
-
     const orgStaff = await ctx.db
       .query("staff")
-      .withIndex("orgId", (q) => q.eq("orgId", staffRecord.orgId))
+      .withIndex("orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
 
     const members = await Promise.all(
