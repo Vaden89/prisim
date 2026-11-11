@@ -7,7 +7,12 @@ import { createSubTask, updateTask } from "../lib/convex.js";
 const blastRadiusRouter = new Hono<AuthEnv>();
 blastRadiusRouter.use(requireAuth);
 
-async function runBlastRadius(task: string, taskId: string, token: string) {
+async function runBlastRadius(
+  task: string,
+  taskId: string,
+  token: string,
+  orgId: string,
+) {
   try {
     const { report } = await blastRadiusAgent(task);
 
@@ -19,14 +24,14 @@ async function runBlastRadius(task: string, taskId: string, token: string) {
   } catch (error) {
     console.error("Blast-radius analysis failed", error);
   } finally {
-    await updateTask(token, false, taskId);
+    await updateTask(token, false, taskId, orgId);
   }
 }
 
 blastRadiusRouter.post("/", async (c) => {
-  const { task, taskId } = await c.req.json();
+  const { task, taskId, orgId } = await c.req.json();
   const { token } = c.get("auth");
-  void runBlastRadius(task, taskId, token);
+  void runBlastRadius(task, taskId, token, orgId);
 
   return c.json({ message: "Analysis started" }, 202);
 });
